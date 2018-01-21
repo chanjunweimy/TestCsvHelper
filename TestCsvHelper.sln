@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2024
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCsvHelper", "TestCsvHelper\TestCsvHelper.csproj", "{A6195D86-02EC-4DC8-8000-5A357DFD8941}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCsvHelper.Tests", "UnitTestProject1\TestCsvHelper.Tests.csproj", "{249DD99C-1356-4D5D-9D48-0C298DB112C6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6195D86-02EC-4DC8-8000-5A357DFD8941}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6195D86-02EC-4DC8-8000-5A357DFD8941}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6195D86-02EC-4DC8-8000-5A357DFD8941}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6195D86-02EC-4DC8-8000-5A357DFD8941}.Release|Any CPU.Build.0 = Release|Any CPU
+		{249DD99C-1356-4D5D-9D48-0C298DB112C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{249DD99C-1356-4D5D-9D48-0C298DB112C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{249DD99C-1356-4D5D-9D48-0C298DB112C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{249DD99C-1356-4D5D-9D48-0C298DB112C6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6FC2920C-5D89-46CE-8DAD-E11249A2DF55}
+	EndGlobalSection
+EndGlobal
