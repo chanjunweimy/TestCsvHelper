@@ -13,14 +13,15 @@ namespace TestCsvHelper.Tests
         private readonly string ERROR_IS_CHILD = "IsChild is not equal";
         private readonly string ERROR_DATE_TIME = "DateTime is not equal";
         private readonly string ERROR_NAME = "Name is not equal";
+        private readonly string ERROR_COUNT = "Count is not equal";
 
         [TestMethod]
         public void TestAMapper()
         {
-            var program = new Program();
+            var program = new CsvExtractor();
             var contents = program.ReadFileA("TestData/A.csv");
             var provider = CultureInfo.InvariantCulture;
-            var format = Constants.DATE_FORMAT;
+            var format = CsvConfigurationConstant.DATE_FORMAT;
             var expectedAs = new List<A> {
                 new A
                 {
@@ -56,10 +57,10 @@ namespace TestCsvHelper.Tests
         [TestMethod]
         public void TestSuperMapper()
         {
-            var program = new Program();
+            var program = new CsvExtractor();
             var contents = program.ReadFileParent<A>("TestData/A.csv");
             var provider = CultureInfo.InvariantCulture;
-            var format = Constants.DATE_FORMAT;
+            var format = CsvConfigurationConstant.DATE_FORMAT;
             var expectedAs = new List<A> {
                 new A
                 {
@@ -95,10 +96,10 @@ namespace TestCsvHelper.Tests
         [TestMethod]
         public void TestSuperMapperWithMissing()
         {
-            var program = new Program();
+            var program = new CsvExtractor();
             var contents = program.ReadFileParentWithMissingField<A>("TestData/AWithMissing.csv");
             var provider = CultureInfo.InvariantCulture;
-            var format = Constants.DATE_FORMAT;
+            var format = CsvConfigurationConstant.DATE_FORMAT;
             var expectedAs = new List<A> {
                 new A
                 {
@@ -135,10 +136,10 @@ namespace TestCsvHelper.Tests
         public void TestSuperMapperByRow()
         {
             const int row = 2;
-            var program = new Program();
+            var program = new CsvExtractor();
             var content = program.GetFileParentRow<A>("TestData/A.csv", row);
             var provider = CultureInfo.InvariantCulture;
-            var format = Constants.DATE_FORMAT;
+            var format = CsvConfigurationConstant.DATE_FORMAT;
             var expectedAs = new List<A> {
                 new A
                 {
@@ -173,11 +174,11 @@ namespace TestCsvHelper.Tests
         [ExpectedException(typeof(CsvHelper.MissingFieldException))]
         public void TestSuperMapperWithMissing_Failed()
         {
-            var program = new Program();
+            var program = new CsvExtractor();
 
             var contents = program.ReadFileParent<A>("TestData/AWithMissing.csv");
             var provider = CultureInfo.InvariantCulture;
-            var format = Constants.DATE_FORMAT;
+            var format = CsvConfigurationConstant.DATE_FORMAT;
             var expectedAs = new List<A>
             {
                 new A
@@ -208,6 +209,30 @@ namespace TestCsvHelper.Tests
                 Assert.AreEqual(expectedAs[content.Id - 1].IsChild, content.IsChild, ERROR_IS_CHILD);
                 Assert.AreEqual(expectedAs[content.Id - 1].DateTime, content.DateTime, ERROR_DATE_TIME);
                 Assert.AreEqual(expectedAs[content.Id - 1].Name, content.Name, ERROR_NAME);
+            }
+        }
+
+        [TestMethod]
+        public void TestSuperMapperWithMissingAndNullable()
+        {
+            var program = new CsvExtractor();
+            var contents = program.ReadFileParentWithMissingField<B>("TestData/B.csv");
+            var expectedBs = new List<B> {
+                new B
+                {
+                    Id = 1,
+                    Count = null
+                },
+                new B
+                {
+                    Id = 2,
+                    Count = 0
+                }
+            };
+            foreach (var content in contents.ToList())
+            {
+                Assert.AreEqual(expectedBs[content.Id - 1].Id, content.Id, ERROR_ID);
+                Assert.AreEqual(expectedBs[content.Id - 1].Count, content.Count, ERROR_IS_CHILD);
             }
         }
     }

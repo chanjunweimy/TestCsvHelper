@@ -5,28 +5,28 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
 
 namespace TestCsvHelper
 {
-    public class ParentClass
+    public interface ICsvEntity
+    {
+    }
+
+    public class A : ICsvEntity
     {
         public int Id { get; set; }
         public bool IsChild { get; set; }
         public DateTime DateTime { get; set; }
-    }
-
-    public class A : ParentClass
-    {
         public string Name { get; set; }
     }
 
-    public class B : ParentClass
+    public class B : ICsvEntity
     {
-        public string Title { get; set; }
+        public int Id { get; set; }
+        public int? Count { get; set; }
     }
 
-    public class Constants
+    public class CsvConfigurationConstant
     {
         public static readonly string DATE_FORMAT = "yyyyMMdd";
     }
@@ -37,37 +37,30 @@ namespace TestCsvHelper
         {
             Map(a => a.Id).Index(0).Name("Id");
             Map(a => a.IsChild).Index(1).Name("IsChild");
-            Map(a => a.DateTime).Index(2).Name("DateTime").TypeConverterOption.Format(Constants.DATE_FORMAT).Default(null);          
+            Map(a => a.DateTime).Index(2).Name("DateTime").TypeConverterOption.Format(CsvConfigurationConstant.DATE_FORMAT).Default(null);          
             Map(a => a.Name).Index(3).Name("Name");
         }
     }
-
-    public sealed class BMap : ClassMap<B>
+    
+    public sealed class GenericClassMap<T> : ClassMap<T> where T: ICsvEntity
     {
-        public BMap()
-        {
-            AutoMap();
-            Map(b => b.DateTime).Name("DateTime").TypeConverterOption.Format(Constants.DATE_FORMAT).Default(null);
-            Map(b => b.IsChild).Name("IsChild");
-        }
-    }
-
-    public sealed class SuperMap<T> : ClassMap<T> where T: ParentClass
-    {
-        public SuperMap()
+        public GenericClassMap()
         {
             var properties = typeof(T)
                 .GetProperties();
             foreach (var property in properties)
             {
                 var memberMap = MemberMap.CreateGeneric(typeof(T), property);
+                if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    var typeConverterFactory = new TypeConverterCache();
+                    var nullableConverter = new NullableConverter(property.PropertyType, typeConverterFactory);
+                    memberMap.TypeConverter(nullableConverter);
+                }
+
                 if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
                 {
-                    memberMap.Name(property.Name).TypeConverterOption.Format(Constants.DATE_FORMAT).Default(null);
-                }
-                else if (property.PropertyType == typeof(bool) || property.PropertyType == typeof(bool?))
-                {
-                    memberMap.Name(property.Name);
+                    memberMap.Name(property.Name).TypeConverterOption.Format(CsvConfigurationConstant.DATE_FORMAT).Default(null);
                 }
                 else
                 {
@@ -78,7 +71,7 @@ namespace TestCsvHelper
         }
     }
 
-    public class Program
+    public class CsvExtractor
     {
         public IEnumerable<A> ReadFileA(string fileName)
         {
@@ -93,14 +86,14 @@ namespace TestCsvHelper
             var csv = new CsvReader(File.OpenText(fileName));
             var genericRegisterClassMapMethod = typeof(IReaderConfiguration).GetMethods()
                 .First(m => m.Name == "RegisterClassMap" && m.IsGenericMethod);
-            var genericTypeForCsv = typeof(SuperMap<>);
-            var mapperTypeForCsv = genericTypeForCsv.MakeGenericType(typeof(A));
+            var genericTypeForCsv = typeof(GenericClassMap<>);
+            var mapperTypeForCsv = genericTypeForCsv.MakeGenericType(typeof(T));
             var closedRegisterClassMapMethod =
                 genericRegisterClassMapMethod.MakeGenericMethod(mapperTypeForCsv);
             closedRegisterClassMapMethod.Invoke(csv.Configuration, null);
             var genericGetRecordMethod = typeof(CsvReader).GetMethods()
                 .First(m => m.Name == "GetRecords" && m.IsGenericMethod);
-            var closedGetRecordMethod = genericGetRecordMethod.MakeGenericMethod(typeof(A));
+            var closedGetRecordMethod = genericGetRecordMethod.MakeGenericMethod(typeof(T));
 
             var records = (IEnumerable<T>)closedGetRecordMethod.Invoke(csv, null);
             return records;
@@ -112,14 +105,14 @@ namespace TestCsvHelper
             csv.Configuration.MissingFieldFound = null;
             var genericRegisterClassMapMethod = typeof(IReaderConfiguration).GetMethods()
                 .First(m => m.Name == "RegisterClassMap" && m.IsGenericMethod);
-            var genericTypeForCsv = typeof(SuperMap<>);
-            var mapperTypeForCsv = genericTypeForCsv.MakeGenericType(typeof(A));
+            var genericTypeForCsv = typeof(GenericClassMap<>);
+            var mapperTypeForCsv = genericTypeForCsv.MakeGenericType(typeof(T));
             var closedRegisterClassMapMethod =
                 genericRegisterClassMapMethod.MakeGenericMethod(mapperTypeForCsv);
             closedRegisterClassMapMethod.Invoke(csv.Configuration, null);
             var genericGetRecordMethod = typeof(CsvReader).GetMethods()
                 .First(m => m.Name == "GetRecords" && m.IsGenericMethod);
-            var closedGetRecordMethod = genericGetRecordMethod.MakeGenericMethod(typeof(A));
+            var closedGetRecordMethod = genericGetRecordMethod.MakeGenericMethod(typeof(T));
 
             var records = (IEnumerable<T>)closedGetRecordMethod.Invoke(csv, null);
             
@@ -131,14 +124,14 @@ namespace TestCsvHelper
             var csv = new CsvReader(File.OpenText(fileName));
             var genericRegisterClassMapMethod = typeof(IReaderConfiguration).GetMethods()
                 .First(m => m.Name == "RegisterClassMap" && m.IsGenericMethod);
-            var genericTypeForCsv = typeof(SuperMap<>);
-            var mapperTypeForCsv = genericTypeForCsv.MakeGenericType(typeof(A));
+            var genericTypeForCsv = typeof(GenericClassMap<>);
+            var mapperTypeForCsv = genericTypeForCsv.MakeGenericType(typeof(T));
             var closedRegisterClassMapMethod =
                 genericRegisterClassMapMethod.MakeGenericMethod(mapperTypeForCsv);
             closedRegisterClassMapMethod.Invoke(csv.Configuration, null);
             var genericGetRecordMethod = typeof(CsvReader).GetMethods()
                 .First(m => m.Name == "GetRecord" && m.IsGenericMethod);
-            var closedGetRecordMethod = genericGetRecordMethod.MakeGenericMethod(typeof(A));
+            var closedGetRecordMethod = genericGetRecordMethod.MakeGenericMethod(typeof(T));
             var records = new List<T>();
             while (csv.Read())
             {
@@ -153,7 +146,7 @@ namespace TestCsvHelper
 
         static void Main(string[] args)
         {
-            var program = new Program();
+            var program = new CsvExtractor();
             var contents = program.ReadFileParent<A>("TestData/A.csv").ToList();
             Console.WriteLine(contents[0].Id);
         }
