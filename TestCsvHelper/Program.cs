@@ -50,24 +50,30 @@ namespace TestCsvHelper
             Map(b => b.IsChild).Name("IsChild");
         }
     }
-    /*
-     * TODO: Implement SuperMapper to map all classes in a ClassMap
+
     public sealed class SuperMap<T> : ClassMap<T> where T: ParentClass
     {
         public SuperMap()
         {
-            var type = this.GetType();
-            var properties = type.GetProperties();
+            var properties = typeof(T)
+                .GetProperties();
             foreach (var property in properties)
             {
-                if (property.PropertyType == typeof(bool))
+                if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
                 {
-                    
+                    Map(typeof(T), property).Name(property.Name).TypeConverterOption.Format(Constants.DATE_FORMAT).Default(null);
+                }
+                else if (property.PropertyType == typeof(bool) || property.PropertyType == typeof(bool?))
+                {
+                    Map(typeof(T), property).Name(property.Name);
+                }
+                else
+                {
+                    Map(typeof(T), property).Name(property.Name).Default(null);
                 }
             }
         }
     }
-    */
 
     public class Program
     {
@@ -75,8 +81,15 @@ namespace TestCsvHelper
         {
             var csv = new CsvReader(File.OpenText(fileName));
             csv.Configuration.RegisterClassMap<AMap>();
-            //csv.Read();
             var records = csv.GetRecords<A>();
+            return records;
+        }
+
+        public IEnumerable<T> ReadFileParent<T>(string fileName)
+        {
+            var csv = new CsvReader(File.OpenText(fileName));
+            csv.Configuration.RegisterClassMap<AMap>();
+            var records = csv.GetRecords<T>();
             return records;
         }
 
